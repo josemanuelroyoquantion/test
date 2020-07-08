@@ -1,0 +1,27 @@
+container('nodejs') {
+  gitlabBuilds(builds: ['build', 'test', 'artifacts']) {
+    stage('build') { gitlabCommitStatus(name: 'build') {
+      sh """
+      cd frontend
+      npm install
+      npm run build
+      cd ../backend
+      npm install
+      """  }}
+
+    stage('test') { gitlabCommitStatus(name: 'test') {
+      sh """
+      cd frontend
+      npm run lint
+      npm test
+      cd ../backend
+      npm run lint
+      npm test
+      """
+    }}
+
+    stage('artifacts') { gitlabCommitStatus(name: 'artifacts') {
+      archiveArtifacts artifacts: '*', fingerprint: true, onlyIfSuccessful: true
+    }}
+  }
+}
